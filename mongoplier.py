@@ -1,13 +1,6 @@
-# Sample usage (default hostname and post used):
-# mongoplier.py --source collection --database testdb --collection test_collection --copy_type copy_one --nrepeats 1
-# finds 1st document in a collection and fills it into collection "nrepeats" times.
-
-# Advanced usage (+hostname specified, +copy of all documents N times, instead of just first one)
-# mongoplier.py --host localhost --port 27017 --source collection --database testdb --collection test_collection --copytype copy_one --nrepeats 1
-# takes the whole collection data and fills it into collection "nrepeats" times
-
 import argparse
 import pymongo
+import uuid
 
 class Mongoplier:
 
@@ -20,6 +13,7 @@ class Mongoplier:
         'collection': 'test',
         'nrepeats': 1,
         'copy_type': 'copy_one',
+        'random_field': 'organization_id',
     }
     connection = None
     
@@ -58,9 +52,15 @@ class Mongoplier:
         parser.add_argument('--nrepeats', metavar='number_of_repeats', type=str, 
                             default=self.DEFAULTS.get('nrepeats'),
                             help='The number of repeats/copies to make')
+        
         parser.add_argument('--copy_type', metavar='copy_type', type=str, 
                             default=self.DEFAULTS.get('copy_type'),
                             help='Copy 1st document or all data: copy_one or copy_all')
+
+        parser.add_argument('--random_field', metavar='random_field', type=str, 
+                            default=self.DEFAULTS.get('random_field'),
+                            help='A field where random UUID string is populated')
+
 
         self.args = parser.parse_args()
 
@@ -69,7 +69,7 @@ class Mongoplier:
         if not record_to_copy:
             raise Exception("No documents found, can't copy anything.")
             
-        del record_to_copy["_id"]
+        record_to_copy = self.transform_source(record_to_copy)
         
         from datetime import datetime
         start = datetime.now()
@@ -86,7 +86,7 @@ class Mongoplier:
          
         insertable_collection = []
         for record in records_to_copy:
-            del record["_id"]
+            record = self.transform_source(record)
             insertable_collection.append(record) 
             
         from datetime import datetime
@@ -98,6 +98,13 @@ class Mongoplier:
           
         print "Done!\nCollection %s: inserted %d copies of original collection, total inserted records=%s" % (self.args.source, nrepeat, len(insertable_collection)* nrepeat)   
        
+    def transform_source(self, record_to_copy):
+        del record_to_copy["_id"]
+        
+        if "random_field" in self.args:
+            record_to_copy[self.args.random_field] = uuid.uuid4()
+        
+        return record_to_copy 
 
     def run(self):
         
