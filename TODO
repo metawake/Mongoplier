@@ -1,0 +1,8 @@
+TODO:
+
+* add ability to read source data from a file, so that even empty collection
+could be populated
+
+* add random field data generation
+
+ 
