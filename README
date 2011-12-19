@@ -1,0 +1,23 @@
+This is a small tool to populate your mongo db database with test data.
+I've created it because I needed some rough estimations/ideas of how my
+app will behave with large set of data.
+
+Basically, this tool uses already existing data as a source and either copies 
+the first document/record N times or even the whole collection data n times.
+This is configured by copy_type parameter (=copy_one, copy_all).
+
+Other parameters include host, port (can be omitted for defaults), database,
+collection (where copy source is read and multiples, hence the name - Mongoplier).
+
+***
+
+Sample usage (default hostname and post used):
+mongoplier.py --source collection --database testdb --collection test_collection --copy_type copy_one --nrepeats 1
+
+Description: finds 1st document in a collection and fills it into collection "nrepeats" times.
+
+
+Advanced usage (+hostname specified, +copy of all documents N times, instead of just first one)
+mongoplier.py --host localhost --port 27017 --source collection --database testdb --collection test_collection --copytype copy_one --nrepeats 1
+
+Description: takes the whole collection data and fills it into collection "nrepeats" times
